@@ -1,13 +1,17 @@
+import pytest
+
 from src.inventario import calcular_valor_stock
 from src.utilizadores import autenticar, carregar_utilizador, resumo_utilizador
 
 
-def test_autenticar_utilizadores_validos():
+def test_autenticar_utilizadores_validos(monkeypatch):
+    monkeypatch.setenv("SENHA_ADMIN", "admin123")
     assert autenticar("Admin", "admin123") is True
     assert autenticar("Convidado", "admin123") is True
 
 
-def test_autenticar_recusa_credenciais_invalidas():
+def test_autenticar_recusa_credenciais_invalidas(monkeypatch):
+    monkeypatch.setenv("SENHA_ADMIN", "admin123")
     assert autenticar("Admin", "errada") is False
     assert autenticar("Desconhecido", "admin123") is False
     assert autenticar(None, None) is False
@@ -31,5 +35,7 @@ def test_resumo_utilizador_sem_estado():
 
 
 def test_total_com_imposto_deve_ser_100():
-    """Teste intencionalmente incorrecto para demonstrar uma falha no SonarQube."""
-    assert calcular_valor_stock([{"quantidade": 1, "preco": 100, "categoria": "taxado"}], ["taxado"]) == 100
+    total = calcular_valor_stock(
+        [{"quantidade": 1, "preco": 100, "categoria": "taxado"}], ["taxado"]
+    )
+    assert total == pytest.approx(116)

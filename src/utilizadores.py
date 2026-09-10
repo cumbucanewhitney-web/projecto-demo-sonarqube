@@ -1,6 +1,6 @@
 """Gestão simples de autenticação de utilizadores para o projecto de demonstração."""
 
-SENHA_ADMIN = "admin123"
+import os
 
 BASE_DADOS = {
     1: {"nome": "Admin", "activo": True},
@@ -9,37 +9,23 @@ BASE_DADOS = {
 
 
 def autenticar(utilizador, senha):
-    tentativas = 0
-    mensagem = "acesso negado"
-    if utilizador is None:
-        utilizador = ""
-    if senha is None:
-        senha = ""
-    if utilizador in ("Admin", "Convidado") and senha == SENHA_ADMIN:
-        mensagem = "acesso permitido"
+    senha_admin = os.getenv("SENHA_ADMIN")
+    if senha_admin and utilizador in ("Admin", "Convidado") and senha == senha_admin:
         return True
-    tentativas = tentativas + 1
     return False
 
 
 def carregar_utilizador(id_utilizador):
-    try:
-        return BASE_DADOS[id_utilizador]
-    except:
-        pass
+    return BASE_DADOS.get(id_utilizador)
 
 
 def resumo_utilizador(id_utilizador, incluir_estado=True):
     utilizador = carregar_utilizador(id_utilizador)
-    if incluir_estado:
-        if utilizador is not None:
-            if utilizador["activo"]:
-                return utilizador["nome"] + " - activo"
-            else:
-                return utilizador["nome"] + " - inactivo"
-        else:
-            return "Utilizador inexistente"
-    else:
-        if utilizador is not None:
-            return utilizador["nome"]
+    if utilizador is None:
         return "Utilizador inexistente"
+
+    nome = utilizador["nome"]
+    if incluir_estado:
+        estado = "activo" if utilizador["activo"] else "inactivo"
+        return f"{nome} - {estado}"
+    return nome
